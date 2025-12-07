@@ -1,24 +1,36 @@
-// swift-tools-version: 6.1
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
+// swift-tools-version: 5.9
 import PackageDescription
 
 let package = Package(
     name: "UniversalShimmer",
+    
+    // Minimum iOS version your shimmer supports
+    platforms: [
+        .iOS(.v14)
+    ],
+    
+    // Public product that users import
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "UniversalShimmer",
-            targets: ["UniversalShimmer"]),
+            targets: ["UniversalShimmer"]
+        )
     ],
+    
+    // Targets describe where the source code lives
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "UniversalShimmer"),
+            name: "UniversalShimmer",
+            dependencies: [],
+            path: "Sources/UniversalShimmer",   // ← IMPORTANT
+            sources: ["."],
+            resources: []
+        ),
+        
         .testTarget(
             name: "UniversalShimmerTests",
-            dependencies: ["UniversalShimmer"]
-        ),
+            dependencies: ["UniversalShimmer"],
+            path: "Tests/UniversalShimmerTests"
+        )
     ]
 )
