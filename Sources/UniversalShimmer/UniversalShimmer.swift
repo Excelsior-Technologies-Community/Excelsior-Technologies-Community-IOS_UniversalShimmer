@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+import Network
 // MARK: - Shimmer Configuration Model
 
 public struct ShimmerConfig: Equatable {
@@ -135,3 +135,38 @@ public extension View {
 
 
  
+class ProductViewModel: ObservableObject {
+    @Published var isLoading: Bool = true
+    @Published var products: [String] = []   // Example data
+    
+    init() {
+        loadData()
+    }
+    
+    func loadData() {
+        isLoading = true
+        
+        // Simulate API call
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            self.products = ["Cream", "Lotion", "Facewash", "Serum"]
+            self.isLoading = false
+        }
+    }
+}
+
+
+class NetworkMonitor: ObservableObject {
+    @Published var isConnected: Bool = true
+
+    private let monitor = NWPathMonitor()
+    private let queue = DispatchQueue(label: "NetworkMonitor")
+
+    init() {
+        monitor.pathUpdateHandler = { path in
+            DispatchQueue.main.async {
+                self.isConnected = (path.status == .satisfied)
+            }
+        }
+        monitor.start(queue: queue)
+    }
+}
