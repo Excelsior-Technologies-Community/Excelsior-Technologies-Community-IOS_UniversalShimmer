@@ -53,15 +53,21 @@ public struct ShimmerModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        ZStack {
-            if isActive {
-                content.hidden()
-                shimmerMask.mask(content)
+      ZStack {
+    if isActive {
+        content
+            .hidden() // hide actual content
+            .overlay(
+                shimmerMask
+                    .blur(radius: 10)  // 🔥 blur effect
+                    .opacity(0.9)      // 🔥 stronger shimmer
                     .onAppear { animate() }
-            } else {
-                content
-            }
-        }
+            )
+    } else {
+        content
+    }
+}
+
     }
     
     private var shimmerMask: some View {
