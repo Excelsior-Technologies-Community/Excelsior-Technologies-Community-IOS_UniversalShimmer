@@ -1,94 +1,47 @@
+# 🎯 **UniversalShimmer — iOS Shimmer & Skeleton Loader (SwiftUI)**
 
-# 🎯 **FULL STEP-BY-STEP DEVELOPER GUIDE**
+UniversalShimmer is a lightweight, production-grade shimmer engine built for SwiftUI.
+It provides:
 
-### *How Any Developer Can Add UniversalShimmer to Their Project (SPM)*
+✨ **Instagram-quality shimmer animation**
+✨ **Premium skeleton loading placeholders**
+✨ **Super easy setup with Swift Package Manager**
+✨ **Customizable colors, speed, and direction**
 
-This is written like a proper README section — you can paste it directly into your own repo’s README.md.
+Works on:
 
----
-
-# 📦 UniversalShimmer — Installation Guide (Swift Package Manager)
-
-UniversalShimmer is distributed using **Swift Package Manager**, the official dependency manager by Apple.
-Any developer can add it to their iOS project by following the steps below.
-
----
-
-# ✅ **1. Requirements**
-
-* **Xcode 14 or higher**
-* **iOS 14+ deployment target**
-* Internet connection
-* Swift Package Manager enabled
+* iOS 14+
+* SwiftUI
+* Any View / Any Shape
+* Any Layout (List, VStack, HStack, Grid)
 
 ---
 
-# 🔧 **2. Adding the Package to Your Project**
+# 📦 **1. Installation (Swift Package Manager)**
 
-#### **Step 1 — Open Xcode**
+### Step 1 — Open Xcode
 
-Open your existing iOS project (.xcodeproj or .xcworkspace).
+### Step 2 — `File → Add Packages…`
 
----
-
-#### **Step 2 — Add Swift Package**
-
-In the top menu:
-
-```
-File → Add Packages…
-```
-
-This opens the Swift Package Manager window.
-
----
-
-#### **Step 3 — Enter the Package URL**
-
-Paste this URL:
+### Step 3 — Paste the package URL:
 
 ```
 https://github.com/Excelsior-Technologies-Community/Excelsior-Technologies-Community-IOS_UniversalShimmer.git
 ```
 
-Press **Enter**.
-
-Xcode will fetch the package details.
-
----
-
-#### **Step 4 — Select the Correct Branch**
-
-Choose:
+### Step 4 — Select branch:
 
 ```
 Branch → Stages
 ```
 
-Because the shimmer code currently lives inside the **Stages** branch.
-
----
-
-#### **Step 5 — Add to Your App Target**
-
-You will see your app's target (example: `MyApp`).
-
-Make sure the checkbox is ON.
-
-Click:
-
-```
-Add Package
-```
+### Step 5 — Add to your app target → **Add Package**
 
 Done! 🎉
-UniversalShimmer is now connected to your project.
 
 ---
 
-# 📥 **3. Importing the Framework**
-
-In any Swift file where you want to use shimmer:
+# 📥 **2. Import the Framework**
 
 ```swift
 import UniversalShimmer
@@ -96,24 +49,21 @@ import UniversalShimmer
 
 ---
 
-# ✨ **4. Basic Usage Example**
+# ✨ **3. Basic Shimmer Example**
 
 ```swift
-import SwiftUI
-import UniversalShimmer
-
 struct ContentView: View {
-    @State private var loading = true
+    @State private var isLoading = true
 
     var body: some View {
         VStack(spacing: 20) {
 
             Text("Excelsior Shimmer")
                 .font(.title)
-                .shimmer(active: loading)
+                .shimmer(active: isLoading)
 
-            Button(loading ? "Stop Shimmer" : "Start Shimmer") {
-                loading.toggle()
+            Button(isLoading ? "Stop Shimmer" : "Start Shimmer") {
+                withAnimation { isLoading.toggle() }
             }
         }
         .padding()
@@ -123,25 +73,49 @@ struct ContentView: View {
 
 ---
 
-# 🧩 **5. Using Built-in Skeleton Components**
+# 🦴 **4. Skeleton Loading Example (Best Practice)**
 
-UniversalShimmer provides premade UI skeletons:
+Use `.shimmerSkeleton(active:)` to hide real content and show shimmer placeholder.
 
-### Text skeleton
+```swift
+struct ContentView: View {
+    @State private var isLoading = true
+
+    var body: some View {
+        VStack(spacing: 20) {
+
+            Text("Excelsior Shimmer")
+                .font(.title)
+                .shimmerSkeleton(active: isLoading)
+
+            Text("Username")
+                .font(.title)
+                .shimmerSkeleton(active: isLoading)
+
+            Button(isLoading ? "Stop Shimmer" : "Start Shimmer") {
+                isLoading.toggle()
+            }
+        }
+        .padding()
+    }
+}
+```
+
+### ✔ Content hidden
+
+### ✔ Shimmer shows instead
+
+### ✔ Real content appears when loading = false
+
+---
+
+# 🧱 **5. Optional Skeleton Components**
+
+(Only include if you kept them in your package)
 
 ```swift
 SkeletonText(width: 200, height: 20)
-```
-
-### Avatar skeleton
-
-```swift
 SkeletonAvatar(size: 60)
-```
-
-### Card skeleton
-
-```swift
 SkeletonCard()
 ```
 
@@ -152,21 +126,19 @@ if loading {
     SkeletonText(width: 200)
     SkeletonAvatar(size: 70)
 } else {
-    Text("Loaded content goes here")
+    Text("Loaded Content")
 }
 ```
 
 ---
 
-# ⚡ **6. Customizing the Shimmer Effect**
-
-You can control speed, direction, colors, opacity:
+# 🎨 **6. Customize the Shimmer Animation**
 
 ```swift
 let config = ShimmerConfig(
     baseColor: .gray.opacity(0.3),
-    highlightColor: .white.opacity(0.8),
-    speed: 1.1,
+    highlightColor: .white.opacity(0.9),
+    speed: 1.2,
     opacity: 1.0,
     direction: .leftToRight
 )
@@ -177,52 +149,50 @@ Text("Custom Shimmer")
 
 ---
 
-# 🛠 **7. Troubleshooting**
+# 🔧 **7. Troubleshooting**
 
-### 🔹 Error: *"No such module 'UniversalShimmer'"*
+### 🔹 No Such Module 'UniversalShimmer'
 
 Fix:
 
-1. Go to Project → Your App Target → **Frameworks, Libraries, and Embedded Content**
-2. Confirm: `UniversalShimmer` appears.
-3. Clean build folder:
-
-   ```
-   Shift + Command + K
-   ```
-4. Build again:
-
-   ```
-   Command + B
-   ```
-
----
-
-### 🔹 Error: *"Package.swift doesn't exist"*
-
-This happens if:
-
-* Wrong URL was used
-* Wrong branch was selected
-* Your local network blocked GitHub
-
-Make sure you used the correct URL:
+1. Ensure package is added to target
+2. Clean build:
 
 ```
-https://github.com/Excelsior-Technologies-Community/Excelsior-Technologies-Community-IOS_UniversalShimmer.git
+Shift + Command + K
+```
+
+3. Rebuild:
+
+```
+Command + B
 ```
 
 ---
 
-# 📘 **8. Example: Real API Loading + Shimmer**
+### 🔹 Shimmer not animating
+
+Make sure:
+
+```swift
+withAnimation {
+    isLoading.toggle()
+}
+```
+
+Animation requires SwiftUI animation context.
+
+---
+
+# 📘 **8. Real-World Example: API Loading + Skeleton**
 
 ```swift
 struct JobLoadingView: View {
-    @State private var isLoading = true
+    @State private var loading = true
 
     var body: some View {
-        VStack {
-            if isLoading {
+        VStack(spacing: 20) {
+            if loading {
                 SkeletonText(width: 250)
                 SkeletonAvatar(size: 80)
             } else {
@@ -231,15 +201,15 @@ struct JobLoadingView: View {
             }
 
             Button("Toggle Loading") {
-                isLoading.toggle()
+                loading.toggle()
             }
         }
-        .padding()
     }
 }
 ```
 
 ---
 
-# 🎉 You Are Done!
+# 🎉 **Done!**
+
  

@@ -38,94 +38,56 @@ public struct ShimmerConfig: Equatable {
     public static let `default` = ShimmerConfig()
 }
 
-
-// MARK: - Shimmer Modifier (Core Engine)
-
 public struct ShimmerModifier: ViewModifier {
     
-    @State private var progress: CGFloat = -1
-    private let isActive: Bool
-    private let config: ShimmerConfig
-    
-    public init(active: Bool, config: ShimmerConfig) {
-        self.isActive = active
-        self.config = config
-    }
-    
+    @State private var moveTo: CGFloat = -1
+    let active: Bool
+    let config: ShimmerConfig
+
     public func body(content: Content) -> some View {
-      ZStack {
-    if isActive {
         content
-            .hidden() // hide actual content
             .overlay(
-                shimmerMask
-                    .blur(radius: 10)  // 🔥 blur effect
-                    .opacity(0.9)      // 🔥 stronger shimmer
-                    .onAppear { animate() }
+                Group {
+                    if active {
+                        shimmerOverlay(content: content)
+                            .onAppear { start() }
+                    }
+                }
             )
-    } else {
-        content
+    }
+
+    private func shimmerOverlay(content: Content) -> some View {
+        GeometryReader { geo in
+            let size = geo.size
+            
+            Rectangle()
+                .fill(config.baseColor)
+                .overlay(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            config.baseColor.opacity(0.2),
+                            config.highlightColor.opacity(0.8),
+                            config.baseColor.opacity(0.2)
+                        ]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: size.width * 1.2)
+                    .offset(x: size.width * moveTo)
+                    .blendMode(.lighten)
+                )
+                .mask(content)
+        }
+    }
+
+    private func start() {
+        withAnimation(.linear(duration: config.speed).repeatForever(autoreverses: false)) {
+            moveTo = 1.2
+        }
     }
 }
 
-    }
-    
-    private var shimmerMask: some View {
-        GeometryReader { geo in
-            LinearGradient(
-                gradient: Gradient(stops: [
-                    .init(color: config.baseColor, location: 0),
-                    .init(color: config.highlightColor, location: 0.5),
-                    .init(color: config.baseColor, location: 1)
-                ]),
-                startPoint: gradientStart,
-                endPoint: gradientEnd
-            )
-            .opacity(config.opacity)
-            .frame(width: geo.size.width * 3, height: geo.size.height * 3)
-            .offset(offset(for: geo.size))
-        }
-    }
-    
-    private func animate() {
-        withAnimation(.linear(duration: config.speed).repeatForever(autoreverses: false)) {
-            progress = 2
-        }
-    }
-    
-    // MARK: Direction Handling
-    
-    private var gradientStart: UnitPoint {
-        switch config.direction {
-        case .leftToRight: return .leading
-        case .rightToLeft: return .trailing
-        case .topToBottom: return .top
-        case .bottomToTop: return .bottom
-        }
-    }
-    
-    private var gradientEnd: UnitPoint {
-        switch config.direction {
-        case .leftToRight: return .trailing
-        case .rightToLeft: return .leading
-        case .topToBottom: return .bottom
-        case .bottomToTop: return .top
-        }
-    }
-    
-    private func offset(for size: CGSize) -> CGSize {
-        switch config.direction {
-        case .leftToRight:
-            return CGSize(width: -size.width * 2 + (size.width * progress), height: 0)
-        case .rightToLeft:
-            return CGSize(width: size.width * 2 - (size.width * progress), height: 0)
-        case .topToBottom:
-            return CGSize(width: 0, height: -size.height * 2 + (size.height * progress))
-        case .bottomToTop:
-            return CGSize(width: 0, height: size.height * 2 - (size.height * progress))
-        }
-    }
-}
+
 
 
 // MARK: - Public View Extension
@@ -160,6 +122,25 @@ class ProductViewModel: ObservableObject {
     }
 }
 
+public extension View {
+    
+    /// Shows shimmer when active, and hides the real content.
+    @ViewBuilder
+    func shimmerPlaceholder(
+        active: Bool,
+        config: ShimmerConfig = .default
+    ) -> some View {
+        if active {
+            self
+                .hidden()        // hide real content
+                .shimmer(active: true, config: config)
+        } else {
+            self                // show real content
+        }
+    }
+}
+
+
 
 class NetworkMonitor: ObservableObject {
     @Published var isConnected: Bool = true
@@ -176,3 +157,26 @@ class NetworkMonitor: ObservableObject {
         monitor.start(queue: queue)
     }
 }
+public extension View {
+    @ViewBuilder
+    func shimmerSkeleton(
+        active: Bool,
+        config: ShimmerConfig = .default
+    ) -> some View {
+        if active {
+            self
+                .hidden()
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(config.baseColor)
+                        .modifier(ShimmerModifier(active: true, config: config))
+                )
+        } else {
+            self
+        }
+    }
+}
+
+
+
+
