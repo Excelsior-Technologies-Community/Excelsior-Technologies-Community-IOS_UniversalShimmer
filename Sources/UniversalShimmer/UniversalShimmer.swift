@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Network
+
 // MARK: - Shimmer Configuration Model
 
 public struct ShimmerConfig: Equatable {
@@ -22,9 +23,9 @@ public struct ShimmerConfig: Equatable {
     public var direction: Direction
     
     public init(
-        baseColor: Color = Color.gray.opacity(0.28),
-        highlightColor: Color = Color.white.opacity(0.65),
-        speed: Double = 1.0,
+        baseColor: Color = Color.gray.opacity(0.25),
+        highlightColor: Color = Color.white.opacity(0.7),
+        speed: Double = 1.2,
         opacity: Double = 1.0,
         direction: Direction = .leftToRight
     ) {
@@ -32,11 +33,14 @@ public struct ShimmerConfig: Equatable {
         self.highlightColor = highlightColor
         self.speed = speed
         self.opacity = opacity
-        self.direction = direction
+        this.direction = direction
     }
     
     public static let `default` = ShimmerConfig()
 }
+
+
+// MARK: - Shimmer Modifier
 
 public struct ShimmerModifier: ViewModifier {
     
@@ -66,7 +70,7 @@ public struct ShimmerModifier: ViewModifier {
                     LinearGradient(
                         gradient: Gradient(colors: [
                             config.baseColor.opacity(0.2),
-                            config.highlightColor.opacity(0.8),
+                            config.highlightColor.opacity(0.9),
                             config.baseColor.opacity(0.2)
                         ]),
                         startPoint: .leading,
@@ -88,67 +92,15 @@ public struct ShimmerModifier: ViewModifier {
 }
 
 
+// MARK: - Network Monitor
 
-
-// MARK: - Public View Extension
-
-public extension View {
-    func shimmer(
-        active: Bool = true,
-        config: ShimmerConfig = .default
-    ) -> some View {
-        self.modifier(ShimmerModifier(active: active, config: config))
-    }
-}
-
-
- 
-class ProductViewModel: ObservableObject {
-    @Published var isLoading: Bool = true
-    @Published var products: [String] = []   // Example data
-    
-    init() {
-        loadData()
-    }
-    
-    func loadData() {
-        isLoading = true
-        
-        // Simulate API call
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            self.products = ["Cream", "Lotion", "Facewash", "Serum"]
-            self.isLoading = false
-        }
-    }
-}
-
-public extension View {
-    
-    /// Shows shimmer when active, and hides the real content.
-    @ViewBuilder
-    func shimmerPlaceholder(
-        active: Bool,
-        config: ShimmerConfig = .default
-    ) -> some View {
-        if active {
-            self
-                .hidden()        // hide real content
-                .shimmer(active: true, config: config)
-        } else {
-            self                // show real content
-        }
-    }
-}
-
-
-
-class NetworkMonitor: ObservableObject {
-    @Published var isConnected: Bool = true
+public class NetworkMonitor: ObservableObject {
+    @Published public var isConnected: Bool = true
 
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "NetworkMonitor")
 
-    init() {
+    public init() {
         monitor.pathUpdateHandler = { path in
             DispatchQueue.main.async {
                 self.isConnected = (path.status == .satisfied)
@@ -157,18 +109,30 @@ class NetworkMonitor: ObservableObject {
         monitor.start(queue: queue)
     }
 }
+
+
+// MARK: - Shimmer Extensions
+
 public extension View {
+
+    /// Shimmer overlay (content still visible)
+    func shimmer(
+        active: Bool = true,
+        config: ShimmerConfig = .default
+    ) -> some View {
+        self.modifier(ShimmerModifier(active: active, config: config))
+    }
+
+    /// Completely hides content and replaces it with skeleton shimmer
     @ViewBuilder
     func shimmerSkeleton(
         active: Bool,
         config: ShimmerConfig = .default
     ) -> some View {
         if active {
-            self
-                .hidden()
+            self.hidden()
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(config.baseColor)
+                    self.hidden()
                         .modifier(ShimmerModifier(active: true, config: config))
                 )
         } else {
@@ -176,7 +140,3 @@ public extension View {
         }
     }
 }
-
-
-
-
