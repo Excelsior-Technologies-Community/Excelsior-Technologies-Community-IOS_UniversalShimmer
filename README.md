@@ -3,10 +3,10 @@
 UniversalShimmer is a lightweight, production-grade shimmer engine built for SwiftUI.
 It provides:
 
-✨ **Instagram-quality shimmer animation**
-✨ **Premium skeleton loading placeholders**
-✨ **Super easy setup with Swift Package Manager**
-✨ **Customizable colors, speed, and direction**
+ **Instagram-quality shimmer animation**
+ **Premium skeleton loading placeholders**
+ **Super easy setup with Swift Package Manager**
+ **Customizable colors, speed, and direction**
 
 Works on:
 
@@ -17,7 +17,7 @@ Works on:
 
 ---
 
-# 📦 **1. Installation (Swift Package Manager)**
+#  **1. Installation (Swift Package Manager)**
 
 ### Step 1 — Open Xcode
 
@@ -37,11 +37,11 @@ Branch → Stages
 
 ### Step 5 — Add to your app target → **Add Package**
 
-Done! 🎉
+Done! 
 
 ---
 
-# 📥 **2. Import the Framework**
+#  **2. Import the Framework**
 
 ```swift
 import UniversalShimmer
@@ -49,7 +49,7 @@ import UniversalShimmer
 
 ---
 
-# ✨ **3. Basic Shimmer Example**
+#  **3. Basic Shimmer Example**
 
 ```swift
 struct ContentView: View {
@@ -109,7 +109,7 @@ struct ContentView: View {
 
 ---
 
-# 🧱 **5. Optional Skeleton Components**
+#  **5. Optional Skeleton Components**
 
 (Only include if you kept them in your package)
 
@@ -132,7 +132,7 @@ if loading {
 
 ---
 
-# 🎨 **6. Customize the Shimmer Animation**
+#  **6. Customize the Shimmer Animation**
 
 ```swift
 let config = ShimmerConfig(
@@ -149,9 +149,9 @@ Text("Custom Shimmer")
 
 ---
 
-# 🔧 **7. Troubleshooting**
+#  **7. Troubleshooting**
 
-### 🔹 No Such Module 'UniversalShimmer'
+###  No Such Module 'UniversalShimmer'
 
 Fix:
 
@@ -170,7 +170,7 @@ Command + B
 
 ---
 
-### 🔹 Shimmer not animating
+###  Shimmer not animating
 
 Make sure:
 
@@ -184,7 +184,7 @@ Animation requires SwiftUI animation context.
 
 ---
 
-# 📘 **8. Real-World Example: API Loading + Skeleton**
+#  **8. Real-World Example: API Loading + Skeleton**
 
 ```swift
 struct JobLoadingView: View {
@@ -210,6 +210,6 @@ struct JobLoadingView: View {
 
 ---
 
-# 🎉 **Done!**
+# **Done!**
 
  
