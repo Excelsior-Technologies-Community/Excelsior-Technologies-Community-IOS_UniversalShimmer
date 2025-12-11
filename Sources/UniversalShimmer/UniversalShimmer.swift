@@ -33,7 +33,8 @@ public struct ShimmerConfig: Equatable {
         self.highlightColor = highlightColor
         self.speed = speed
         self.opacity = opacity
-        this.direction = direction
+        self.direction = direction
+
     }
     
     public static let `default` = ShimmerConfig()
