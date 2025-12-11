@@ -1,5 +1,13 @@
 //
 //  UniversalShimmer.swift
+//  DeliveryTrackingSystem
+//
+//  Created by Noman belim on 11/12/25.
+//
+
+import Foundation
+//
+//  UniversalShimmer.swift
 //  Shimmer
 //
 //  Created by Noman belim on 07/12/25.
@@ -111,33 +119,25 @@ public class NetworkMonitor: ObservableObject {
     }
 }
 
-
-// MARK: - Shimmer Extensions
-
 public extension View {
-
-    /// Shimmer overlay (content still visible)
-    func shimmer(
-        active: Bool = true,
-        config: ShimmerConfig = .default
-    ) -> some View {
-        self.modifier(ShimmerModifier(active: active, config: config))
-    }
-
-    /// Completely hides content and replaces it with skeleton shimmer
     @ViewBuilder
     func shimmerSkeleton(
         active: Bool,
         config: ShimmerConfig = .default
     ) -> some View {
         if active {
-            self.hidden()
-                .overlay(
-                    self.hidden()
-                        .modifier(ShimmerModifier(active: true, config: config))
-                )
+            ZStack {
+                self.hidden()
+
+                Rectangle()
+                    .fill(config.baseColor)
+                    .modifier(ShimmerModifier(active: true, config: config))
+                    .mask(self)
+            }
         } else {
             self
         }
     }
 }
+
+
