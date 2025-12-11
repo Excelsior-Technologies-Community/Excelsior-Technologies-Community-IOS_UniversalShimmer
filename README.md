@@ -1,4 +1,4 @@
-# 🎯 **UniversalShimmer — iOS Shimmer & Skeleton Loader (SwiftUI)**
+#  **UniversalShimmer — iOS Shimmer & Skeleton Loader (SwiftUI)**
 
 UniversalShimmer is a lightweight, production-grade shimmer engine built for SwiftUI.
 It provides:
@@ -73,7 +73,7 @@ struct ContentView: View {
 
 ---
 
-# 🦴 **4. Skeleton Loading Example (Best Practice)**
+#   **4. Skeleton Loading Example (Best Practice)**
 
 Use `.shimmerSkeleton(active:)` to hide real content and show shimmer placeholder.
 
