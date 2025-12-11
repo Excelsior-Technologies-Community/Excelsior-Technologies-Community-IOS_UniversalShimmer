@@ -1,47 +1,34 @@
-#  **UniversalShimmer — iOS Shimmer & Skeleton Loader (SwiftUI)**
+# UniversalShimmer – SwiftUI Shimmer & Skeleton Loader
 
-UniversalShimmer is a lightweight, production-grade shimmer engine built for SwiftUI.
-It provides:
+UniversalShimmer is a lightweight shimmer and skeleton-loading framework for SwiftUI.
+It helps display loading placeholders while fetching data from a remote API or local database.
 
- **Instagram-quality shimmer animation**
- **Premium skeleton loading placeholders**
- **Super easy setup with Swift Package Manager**
- **Customizable colors, speed, and direction**
+Key features:
 
-Works on:
-
-* iOS 14+
-* SwiftUI
-* Any View / Any Shape
-* Any Layout (List, VStack, HStack, Grid)
+• Shimmer effect for any SwiftUI view
+• Skeleton placeholders for text, images, and shapes
+• Configurable colors, speed, and direction
+• Works on iOS 14+
+• Zero external dependencies
 
 ---
 
-#  **1. Installation (Swift Package Manager)**
+# 1. Installation (Swift Package Manager)
 
-### Step 1 — Open Xcode
-
-### Step 2 — `File → Add Packages…`
-
-### Step 3 — Paste the package URL:
+1. Open Xcode
+2. Go to: `File → Add Packages…`
+3. Enter the package URL:
 
 ```
-https://github.com/Excelsior-Technologies-Community/Excelsior-Technologies-Community-IOS_UniversalShimmer.git
+https://github.com/Excelsior-Technologies-Community/IOS_UniversalShimmer.git
 ```
 
-### Step 4 — Select branch:
-
-```
-Branch → Stages
-```
-
-### Step 5 — Add to your app target → **Add Package**
-
-Done! 
+4. Select the `Development` branch
+5. Add the package to your app target
 
 ---
 
-#  **2. Import the Framework**
+# 2. Import the Framework
 
 ```swift
 import UniversalShimmer
@@ -49,167 +36,175 @@ import UniversalShimmer
 
 ---
 
-#  **3. Basic Shimmer Example**
+# 3. Using Shimmer with Skeleton Placeholders
+
+The modifier `.shimmerSkeleton(active:)` hides the real content and shows a shimmer effect while loading.
+
+Example placeholder:
 
 ```swift
-struct ContentView: View {
-    @State private var isLoading = true
-
-    var body: some View {
-        VStack(spacing: 20) {
-
-            Text("Excelsior Shimmer")
-                .font(.title)
-                .shimmer(active: isLoading)
-
-            Button(isLoading ? "Stop Shimmer" : "Start Shimmer") {
-                withAnimation { isLoading.toggle() }
-            }
-        }
-        .padding()
-    }
-}
+RoundedRectangle(cornerRadius: 6)
+    .frame(height: 24)
+    .shimmerSkeleton(active: true)
 ```
 
 ---
 
-#   **4. Skeleton Loading Example (Best Practice)**
+# 4. Customizing the Shimmer
 
-Use `.shimmerSkeleton(active:)` to hide real content and show shimmer placeholder.
-
-```swift
-struct ContentView: View {
-    @State private var isLoading = true
-
-    var body: some View {
-        VStack(spacing: 20) {
-
-            Text("Excelsior Shimmer")
-                .font(.title)
-                .shimmerSkeleton(active: isLoading)
-
-            Text("Username")
-                .font(.title)
-                .shimmerSkeleton(active: isLoading)
-
-            Button(isLoading ? "Stop Shimmer" : "Start Shimmer") {
-                isLoading.toggle()
-            }
-        }
-        .padding()
-    }
-}
-```
-
-### ✔ Content hidden
-
-### ✔ Shimmer shows instead
-
-### ✔ Real content appears when loading = false
-
----
-
-#  **5. Optional Skeleton Components**
-
-(Only include if you kept them in your package)
-
-```swift
-SkeletonText(width: 200, height: 20)
-SkeletonAvatar(size: 60)
-SkeletonCard()
-```
-
-Example:
-
-```swift
-if loading {
-    SkeletonText(width: 200)
-    SkeletonAvatar(size: 70)
-} else {
-    Text("Loaded Content")
-}
-```
-
----
-
-#  **6. Customize the Shimmer Animation**
+Shimmer settings can be modified using `ShimmerConfig`.
 
 ```swift
 let config = ShimmerConfig(
-    baseColor: .gray.opacity(0.3),
-    highlightColor: .white.opacity(0.9),
+    baseColor: Color.gray.opacity(0.25),
+    highlightColor: Color.white.opacity(0.7),
     speed: 1.2,
     opacity: 1.0,
     direction: .leftToRight
 )
-
-Text("Custom Shimmer")
-    .shimmer(active: true, config: config)
 ```
 
----
-
-#  **7. Troubleshooting**
-
-###  No Such Module 'UniversalShimmer'
-
-Fix:
-
-1. Ensure package is added to target
-2. Clean build:
-
-```
-Shift + Command + K
-```
-
-3. Rebuild:
-
-```
-Command + B
-```
-
----
-
-###  Shimmer not animating
-
-Make sure:
+Apply custom config:
 
 ```swift
-withAnimation {
-    isLoading.toggle()
-}
+Text("Loading")
+    .shimmerSkeleton(active: true, config: config)
 ```
-
-Animation requires SwiftUI animation context.
 
 ---
 
-#  **8. Real-World Example: API Loading + Skeleton**
+# 5. Troubleshooting
+
+### Shimmer not visible
+
+Ensure placeholders have a fixed width or height.
+
+### "No such module 'UniversalShimmer'"
+
+Confirm that the package is added to the correct target.
+
+### Animation not running
+
+Shimmer requires the SwiftUI rendering cycle to remain active.
+
+---
+
+# 6. Full Working Example (API Loading + Shimmer)
+
+This is the recommended implementation that uses shimmer while an API call loads content.
 
 ```swift
-struct JobLoadingView: View {
-    @State private var loading = true
+import SwiftUI
+import UniversalShimmer
+
+struct ContentView: View {
+    @StateObject private var vm = PostViewModel()
 
     var body: some View {
-        VStack(spacing: 20) {
-            if loading {
-                SkeletonText(width: 250)
-                SkeletonAvatar(size: 80)
-            } else {
-                Text("Job Title Loaded")
-                Image("profilePic")
+        VStack(alignment: .leading, spacing: 16) {
+
+            // Title Shimmer
+            Group {
+                if let title = vm.post?.title {
+                    Text(title)
+                        .font(.title)
+                } else {
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(height: 24)
+                        .shimmerSkeleton(active: vm.isLoading)
+                }
             }
 
-            Button("Toggle Loading") {
-                loading.toggle()
+            // Body shimmer
+            Group {
+                if let body = vm.post?.body {
+                    Text(body)
+                        .font(.body)
+                } else {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(height: 60)
+                        .shimmerSkeleton(active: vm.isLoading)
+                }
             }
+
+            if let error = vm.errorMessage {
+                Text(error)
+                    .foregroundColor(.red)
+            }
+
+            Spacer()
+        }
+        .padding()
+        .onAppear {
+            vm.fetchPost()
         }
     }
 }
+
+struct Post: Codable {
+    let id: Int
+    let title: String
+    let body: String
+}
+
+struct UserResponse: Codable {
+    let data: User
+}
+
+struct User: Codable {
+    let id: Int
+    let email: String
+    let first_name: String
+    let last_name: String
+    let avatar: String
+}
+
+import Foundation
+
+class PostViewModel: ObservableObject {
+    @Published var post: Post?
+    @Published var isLoading = true
+    @Published var errorMessage: String?
+
+    func fetchPost() {
+        guard let url = URL(string: "https://jsonplaceholder.typicode.com/posts/1") else {
+            errorMessage = "Invalid URL"
+            return
+        }
+
+        isLoading = true
+        post = nil
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            
+            if let error = error {
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                    self.isLoading = false
+                }
+                return
+            }
+
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    self.errorMessage = "No data received"
+                    self.isLoading = false
+                }
+                return
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {   // shimmer visibility delay
+                do {
+                    self.post = try JSONDecoder().decode(Post.self, from: data)
+                } catch {
+                    self.errorMessage = "Decoding error: \(error)"
+                }
+
+                self.isLoading = false
+            }
+        }.resume()
+    }
+}
 ```
-
----
-
-# **Done!**
-
  
