@@ -1,11 +1,12 @@
 //
-//  UniversalShimmer.swift
-//  DeliveryTrackingSystem
+//  UniversalShimmer.swift
+//  Shimmer System
 //
-//  Created by Noman belim on 11/12/25.
+//  Created by Noman belim on 11/12/25.
 //
+
 import SwiftUI
-import Network 
+import Network
 
 // MARK: - Shimmer Configuration Model
 
@@ -56,7 +57,7 @@ public struct ShimmerModifier: ViewModifier {
             .overlay(
                 Group {
                     if active {
-                        shimmerOverlay()
+                        shimmerOverlay() // Now correctly interpreted as a View
                             .onAppear { startAnimation() }
                             // Only set the mask if we are actively shimmering
                             .mask(content)
@@ -65,6 +66,8 @@ public struct ShimmerModifier: ViewModifier {
             )
     }
 
+    // *** FIX: Added @ViewBuilder to resolve 'does not conform to View' error ***
+    @ViewBuilder
     private func shimmerOverlay() -> some View {
         GeometryReader { geo in
             let size = geo.size
@@ -90,15 +93,14 @@ public struct ShimmerModifier: ViewModifier {
                     // 2. The moving Linear Gradient (The "highlight" beam)
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            config.baseColor.opacity(0.0), // Transparent edge
+                            config.baseColor.opacity(0.0),      // Transparent edge
                             config.highlightColor.opacity(0.9), // Bright center
-                            config.baseColor.opacity(0.0) // Transparent edge
+                            config.baseColor.opacity(0.0)       // Transparent edge
                         ]),
                         startPoint: gradientStartPoint,
                         endPoint: gradientEndPoint
                     )
-                    // The frame of the gradient needs to be larger than the view to ensure
-                    // the highlight beam is always visible when moving.
+                    // The frame needs to be larger than the view to ensure the highlight beam is always visible when moving.
                     .frame(
                         width: isHorizontal ? size.width * 2 : size.width,
                         height: isHorizontal ? size.height : size.height * 2
@@ -174,4 +176,6 @@ public class NetworkMonitor: ObservableObject {
         }
         monitor.start(queue: queue)
     }
+}
+}
 }
