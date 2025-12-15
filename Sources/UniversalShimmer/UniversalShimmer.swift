@@ -1,6 +1,6 @@
 //
 //  UniversalShimmer.swift
-//  DeliveryTrackingSystem
+//  
 //
 
 import SwiftUI
@@ -22,15 +22,15 @@ public struct ShimmerConfig: Equatable {
     
     public init(
         baseColor: Color = Color.gray.opacity(0.25),
-        highlightColor: Color = Color.white.opacity(0.8),
-        speed: Double = 1.4,
+        highlightColor: Color = Color.white.opacity(0.85),
+        speed: Double = 1.35,
         opacity: Double = 1.0,
         direction: Direction = .leftToRight
     ) {
         self.baseColor = baseColor
         self.highlightColor = highlightColor
         self.speed = speed
-        self.opacity = opacity
+        this.opacity = opacity
         self.direction = direction
     }
     
@@ -38,7 +38,7 @@ public struct ShimmerConfig: Equatable {
 }
 
 
-// MARK: - FINAL PERFECT SHIMMER MODIFIER (Facebook / YouTube Style)
+// MARK: - Perfect Shimmer Modifier (FINAL VERSION)
 
 public struct ShimmerModifier: ViewModifier {
     
@@ -47,24 +47,31 @@ public struct ShimmerModifier: ViewModifier {
     let config: ShimmerConfig
 
     public func body(content: Content) -> some View {
-        content
-            .overlay(
-                active ? shimmerLayer(content: content) : nil
-            )
+        ZStack {
+            // BASE FILL (Fixes your black color issue)
+            content
+                .foregroundColor(.clear)
+                .background(config.baseColor)
+
+            if active {
+                shimmerLayer(content: content)
+            }
+        }
+        .clipped()
     }
 
     private func shimmerLayer(content: Content) -> some View {
         GeometryReader { geo in
             let size = geo.size
 
-            // Wide diagonal highlight band
+            // Smooth diagonal highlight
             let gradient = LinearGradient(
                 gradient: Gradient(colors: [
-                    config.baseColor.opacity(0.2),
-                    config.highlightColor.opacity(0.7),
-                    config.highlightColor,
-                    config.highlightColor.opacity(0.7),
-                    config.baseColor.opacity(0.2)
+                    config.baseColor.opacity(0.1),
+                    config.highlightColor.opacity(0.6),
+                    config.highlightColor.opacity(1),
+                    config.highlightColor.opacity(0.6),
+                    config.baseColor.opacity(0.1)
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -72,7 +79,7 @@ public struct ShimmerModifier: ViewModifier {
 
             Rectangle()
                 .fill(gradient)
-                .frame(width: size.width * 2.2, height: size.height * 2.2)
+                .frame(width: size.width * 2.4, height: size.height * 2.4)
                 .rotationEffect(.degrees(25))
                 .offset(x: size.width * move, y: size.height * move)
                 .animation(
@@ -81,13 +88,13 @@ public struct ShimmerModifier: ViewModifier {
                     value: move
                 )
                 .mask(content)
-                .onAppear { move = 1.6 }
+                .onAppear { move = 1.8 }
         }
     }
 }
 
 
-// MARK: - Public Modifier
+// MARK: - Public Shimmer Extension
 
 public extension View {
     func shimmerSkeleton(active: Bool, config: ShimmerConfig = .default) -> some View {
@@ -96,7 +103,7 @@ public extension View {
 }
 
 
-// MARK: - Network Monitor (unchanged)
+// MARK: - Network Monitor
 
 public class NetworkMonitor: ObservableObject {
     @Published public var isConnected: Bool = true
