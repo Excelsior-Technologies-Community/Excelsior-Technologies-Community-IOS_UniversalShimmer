@@ -1,6 +1,6 @@
 //
 //  UniversalShimmer.swift
-//  
+//
 //
 
 import SwiftUI
@@ -19,7 +19,6 @@ public struct ShimmerConfig: Equatable {
     public var speed: Double
     public var opacity: Double
     public var direction: Direction
-    
     public init(
         baseColor: Color = Color.gray.opacity(0.25),
         highlightColor: Color = Color.white.opacity(0.85),
@@ -30,9 +29,10 @@ public struct ShimmerConfig: Equatable {
         self.baseColor = baseColor
         self.highlightColor = highlightColor
         self.speed = speed
-        this.opacity = opacity
+        self.opacity = opacity     // FIXED HERE
         self.direction = direction
     }
+
     
     public static let `default` = ShimmerConfig()
 }
