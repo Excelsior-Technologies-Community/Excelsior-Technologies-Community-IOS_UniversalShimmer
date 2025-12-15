@@ -4,17 +4,8 @@
 //
 //  Created by Noman belim on 11/12/25.
 //
-
-import Foundation
-//
-//  UniversalShimmer.swift
-//  Shimmer
-//
-//  Created by Noman belim on 07/12/25.
-//
-
 import SwiftUI
-import Network
+import Network 
 
 // MARK: - Shimmer Configuration Model
 
@@ -42,66 +33,132 @@ public struct ShimmerConfig: Equatable {
         self.speed = speed
         self.opacity = opacity
         self.direction = direction
-
     }
     
     public static let `default` = ShimmerConfig()
 }
 
 
-// MARK: - Shimmer Modifier
+// MARK: - Shimmer Modifier (FIXED LOGIC)
 
 public struct ShimmerModifier: ViewModifier {
     
-    @State private var moveTo: CGFloat = -1
+    // Start at -1.0 (gradient off-screen left/top), End at 1.0 (gradient off-screen right/bottom)
+    @State private var phase: CGFloat = -1.0
+    
     let active: Bool
     let config: ShimmerConfig
 
     public func body(content: Content) -> some View {
+        // The base content is rendered first
         content
+            // Then the full-sized shimmer overlay is placed on top
             .overlay(
                 Group {
                     if active {
-                        shimmerOverlay(content: content)
-                            .onAppear { start() }
+                        shimmerOverlay()
+                            .onAppear { startAnimation() }
+                            // Only set the mask if we are actively shimmering
+                            .mask(content)
                     }
                 }
             )
     }
 
-    private func shimmerOverlay(content: Content) -> some View {
+    private func shimmerOverlay() -> some View {
         GeometryReader { geo in
             let size = geo.size
+            let gradientStartPoint: UnitPoint
+            let gradientEndPoint: UnitPoint
+            let isHorizontal: Bool
             
+            switch config.direction {
+            case .leftToRight, .rightToLeft:
+                isHorizontal = true
+                gradientStartPoint = .leading
+                gradientEndPoint = .trailing
+            case .topToBottom, .bottomToTop:
+                isHorizontal = false
+                gradientStartPoint = .top
+                gradientEndPoint = .bottom
+            }
+
+            // 1. Base color fills the entire area
             Rectangle()
                 .fill(config.baseColor)
                 .overlay(
+                    // 2. The moving Linear Gradient (The "highlight" beam)
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            config.baseColor.opacity(0.2),
-                            config.highlightColor.opacity(0.9),
-                            config.baseColor.opacity(0.2)
+                            config.baseColor.opacity(0.0), // Transparent edge
+                            config.highlightColor.opacity(0.9), // Bright center
+                            config.baseColor.opacity(0.0) // Transparent edge
                         ]),
-                        startPoint: .leading,
-                        endPoint: .trailing
+                        startPoint: gradientStartPoint,
+                        endPoint: gradientEndPoint
                     )
-                    .frame(width: size.width * 1.2)
-                    .offset(x: size.width * moveTo)
-                    .blendMode(.lighten)
+                    // The frame of the gradient needs to be larger than the view to ensure
+                    // the highlight beam is always visible when moving.
+                    .frame(
+                        width: isHorizontal ? size.width * 2 : size.width,
+                        height: isHorizontal ? size.height : size.height * 2
+                    )
+                    // 3. Offset the gradient based on the animation phase
+                    .offset(x: isHorizontal ? size.width * phase : 0,
+                            y: isHorizontal ? 0 : size.height * phase)
+                    .blendMode(.screen) // A blend mode that makes the highlight look brighter
+                    .opacity(config.opacity)
                 )
-                .mask(content)
         }
     }
-
-    private func start() {
-        withAnimation(.linear(duration: config.speed).repeatForever(autoreverses: false)) {
-            moveTo = 1.2
+    
+    private func startAnimation() {
+        // Determine start and end points based on direction
+        let start: CGFloat
+        let end: CGFloat
+        
+        switch config.direction {
+        case .leftToRight, .topToBottom:
+            // Starts off-screen left/top (-1.0) and moves to off-screen right/bottom (1.0)
+            start = -1.0
+            end = 1.0
+        case .rightToLeft, .bottomToTop:
+            // Starts off-screen right/bottom (1.0) and moves to off-screen left/top (-1.0)
+            start = 1.0
+            end = -1.0
+        }
+        
+        // Ensure the initial state is set
+        DispatchQueue.main.async {
+            self.phase = start
+            // Animation moves the phase from start to end repeatedly
+            withAnimation(.linear(duration: config.speed).repeatForever(autoreverses: false)) {
+                self.phase = end
+            }
         }
     }
 }
 
 
-// MARK: - Network Monitor
+// MARK: - View Extension (Simplified)
+
+public extension View {
+    @ViewBuilder
+    func shimmerSkeleton(
+        active: Bool,
+        config: ShimmerConfig = .default
+    ) -> some View {
+        // Use the modifier directly on 'self' if active is true
+        if active {
+            self.modifier(ShimmerModifier(active: true, config: config))
+        } else {
+            self // Return the original view when inactive
+        }
+    }
+}
+
+
+// MARK: - Network Monitor (Retained)
 
 public class NetworkMonitor: ObservableObject {
     @Published public var isConnected: Bool = true
@@ -118,26 +175,3 @@ public class NetworkMonitor: ObservableObject {
         monitor.start(queue: queue)
     }
 }
-
-public extension View {
-    @ViewBuilder
-    func shimmerSkeleton(
-        active: Bool,
-        config: ShimmerConfig = .default
-    ) -> some View {
-        if active {
-            ZStack {
-                self.hidden()
-
-                Rectangle()
-                    .fill(config.baseColor)
-                    .modifier(ShimmerModifier(active: true, config: config))
-                    .mask(self)
-            }
-        } else {
-            self
-        }
-    }
-}
-
-
