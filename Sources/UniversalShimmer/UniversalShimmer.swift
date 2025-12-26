@@ -34,7 +34,7 @@ private struct ShimmerModifier: ViewModifier {
     @ViewBuilder private func applyHideMaskOnContentIfNecessary(content: Content) -> some View {
         if hide {
             content.overlay(RoundedRectangle(cornerRadius: hideMaskRadius)
-                .foregroundStyle(hideMaskColor)
+                .foregroundColor(hideMaskColor)
                 .frame(maxWidth: .infinity, maxHeight: .infinity))
         } else { content }
     }
