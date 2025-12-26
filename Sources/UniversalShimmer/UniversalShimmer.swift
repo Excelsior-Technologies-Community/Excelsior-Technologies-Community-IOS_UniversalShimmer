@@ -2,13 +2,12 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 struct ShimmerEffectView: View {
-
     let isActive: Bool
     let speed: CGFloat
     let colors: [Color]
-
+    
     @State private var offset: CGFloat = -1
-
+    
     var body: some View {
         GeometryReader { geo in
             LinearGradient(
@@ -32,7 +31,7 @@ struct ShimmerEffectView: View {
             }
         }
     }
-
+    
     private func animate() {
         withAnimation(
             .linear(duration: speed)
@@ -42,18 +41,16 @@ struct ShimmerEffectView: View {
     }
 }
 
-
 @available(iOS 15.0, *)
 struct UniversalShimmerModifier: ViewModifier {
-
     let isActive: Bool
     let speed: CGFloat
     let colors: [Color]
-
+    
     func body(content: Content) -> some View {
         if isActive {
             content
-                .opacity(0) // keeps layout
+                .opacity(0)
                 .overlay {
                     ShimmerEffectView(
                         isActive: isActive,
@@ -66,7 +63,7 @@ struct UniversalShimmerModifier: ViewModifier {
                               ]
                             : colors
                     )
-                    .mask(content)   // 🔥 THIS is the magic
+                    .mask(content)
                 }
         } else {
             content
@@ -75,7 +72,6 @@ struct UniversalShimmerModifier: ViewModifier {
 }
 
 public extension View {
-
     /// Universal shimmer that adapts to ANY content shape
     @ViewBuilder
     func universalShimmer(
@@ -84,7 +80,7 @@ public extension View {
         colors: [Color] = []
     ) -> some View {
         if #available(iOS 15.0, *) {
-            self.modifier(
+            modifier(
                 UniversalShimmerModifier(
                     isActive: isActive,
                     speed: speed,
@@ -92,9 +88,7 @@ public extension View {
                 )
             )
         } else {
-            // ✅ iOS 14 & below: graceful fallback
             self
         }
     }
 }
-
