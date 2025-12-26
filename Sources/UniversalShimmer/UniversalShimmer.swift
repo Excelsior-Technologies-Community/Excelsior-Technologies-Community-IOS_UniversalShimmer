@@ -1,6 +1,6 @@
 import SwiftUI
-import Network
- 
+
+@available(iOS 15.0, *)
 struct ShimmerEffectView: View {
 
     let isActive: Bool
@@ -42,7 +42,8 @@ struct ShimmerEffectView: View {
     }
 }
 
- 
+
+@available(iOS 15.0, *)
 struct UniversalShimmerModifier: ViewModifier {
 
     let isActive: Bool
