@@ -1,34 +1,47 @@
-# UniversalShimmer – SwiftUI Shimmer & Skeleton Loader
+# UniversalShimmer – SwiftUI Universal Shimmer Loader
 
-UniversalShimmer is a lightweight shimmer and skeleton-loading framework for SwiftUI.
-It helps display loading placeholders while fetching data from a remote API or local database.
+**UniversalShimmer** is a lightweight SwiftUI shimmer loader that works with **any view**
+(Text, Image, Card, Stack, Custom UI) and integrates cleanly with **API loading states**.
 
-Key features:
+It is designed to be:
 
-• Shimmer effect for any SwiftUI view
-• Skeleton placeholders for text, images, and shapes
-• Configurable colors, speed, and direction
-• Works on iOS 14+
-• Zero external dependencies
+* 🔹 Content-agnostic
+* 🔹 API-driven
+* 🔹 Easy to integrate
+* 🔹 Safe for production
 
 ---
 
-# 1. Installation (Swift Package Manager)
+## ✨ Features
 
-1. Open Xcode
-2. Go to: `File → Add Packages…`
-3. Enter the package URL:
+* Works on **any SwiftUI View**
+* No skeleton duplication
+* Driven by `Bool` (`isLoading`)
+* Automatic start & stop
+* Customizable mask, color, radius
+* Works with real API calls
+* iOS 14+
+
+---
+
+## 📦 Installation (Swift Package Manager)
+
+### Add via Xcode
+
+1. Open your project in Xcode
+2. Go to **File → Add Packages…**
+3. Paste the repository URL:
 
 ```
 https://github.com/Excelsior-Technologies-Community/IOS_UniversalShimmer.git
 ```
 
-4. Select the `Development` branch
-5. Add the package to your app target
+4. Select the **Development** branch
+5. Add **UniversalShimmer** to your app target
 
 ---
 
-# 2. Import the Framework
+## 📥 Import
 
 ```swift
 import UniversalShimmer
@@ -36,133 +49,73 @@ import UniversalShimmer
 
 ---
 
-# 3. Using Shimmer with Skeleton Placeholders
+## 🧠 How UniversalShimmer Works (Important)
 
-The modifier `.shimmerSkeleton(active:)` hides the real content and shows a shimmer effect while loading.
+> **Shimmer is applied in the View**
+> **API logic lives in the ViewModel**
+> **A single `Bool` controls shimmer visibility**
 
-Example placeholder:
-
-```swift
-RoundedRectangle(cornerRadius: 6)
-    .frame(height: 24)
-    .shimmerSkeleton(active: true)
-```
+You **never call shimmer inside the API file**.
 
 ---
 
-# 4. Customizing the Shimmer
-
-Shimmer settings can be modified using `ShimmerConfig`.
-
-```swift
-let config = ShimmerConfig(
-    baseColor: Color.gray.opacity(0.25),
-    highlightColor: Color.white.opacity(0.7),
-    speed: 1.2,
-    opacity: 1.0,
-    direction: .leftToRight
-)
-```
-
-Apply custom config:
+## ✅ Basic Usage
 
 ```swift
 Text("Loading")
-    .shimmerSkeleton(active: true, config: config)
+    .shimmerize(active: true)
 ```
 
 ---
 
-# 5. Troubleshooting
+## ✅ Apply to Any View
 
-### Shimmer not visible
+### Text
 
-Ensure placeholders have a fixed width or height.
+```swift
+Text("Loading title")
+    .shimmerize(active: isLoading)
+```
 
-### "No such module 'UniversalShimmer'"
+### Image
 
-Confirm that the package is added to the correct target.
+```swift
+Image(systemName: "photo")
+    .shimmerize(active: isLoading)
+```
 
-### Animation not running
+### Card / Container
 
-Shimmer requires the SwiftUI rendering cycle to remain active.
+```swift
+VStack { ... }
+.shimmerize(active: isLoading)
+```
 
 ---
 
-# 6. Full Working Example (API Loading + Shimmer)
-
-This is the recommended implementation that uses shimmer while an API call loads content.
+## 🔧 Customization Options
 
 ```swift
-import SwiftUI
-import UniversalShimmer
+.shimmerize(
+    active: isLoading,
+    shouldAddHideMask: true,
+    hideMaskColor: Color.gray.opacity(0.3),
+    hideMaskRadius: 16,
+    gradient: nil,
+    animationDuration: 1.7,
+    animationDelay: 0.5
+)
+```
 
-struct ContentView: View {
-    @StateObject private var vm = PostViewModel()
+---
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+## 🚀 Recommended Pattern (API + Shimmer)
 
-            // Title Shimmer
-            Group {
-                if let title = vm.post?.title {
-                    Text(title)
-                        .font(.title)
-                } else {
-                    RoundedRectangle(cornerRadius: 6)
-                        .frame(height: 24)
-                        .shimmerSkeleton(active: vm.isLoading)
-                }
-            }
+### 1️⃣ ViewModel (API only – no shimmer)
 
-            // Body shimmer
-            Group {
-                if let body = vm.post?.body {
-                    Text(body)
-                        .font(.body)
-                } else {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 60)
-                        .shimmerSkeleton(active: vm.isLoading)
-                }
-            }
+```swift
+final class PostViewModel: ObservableObject {
 
-            if let error = vm.errorMessage {
-                Text(error)
-                    .foregroundColor(.red)
-            }
-
-            Spacer()
-        }
-        .padding()
-        .onAppear {
-            vm.fetchPost()
-        }
-    }
-}
-
-struct Post: Codable {
-    let id: Int
-    let title: String
-    let body: String
-}
-
-struct UserResponse: Codable {
-    let data: User
-}
-
-struct User: Codable {
-    let id: Int
-    let email: String
-    let first_name: String
-    let last_name: String
-    let avatar: String
-}
-
-import Foundation
-
-class PostViewModel: ObservableObject {
     @Published var post: Post?
     @Published var isLoading = true
     @Published var errorMessage: String?
@@ -173,12 +126,13 @@ class PostViewModel: ObservableObject {
             return
         }
 
+        errorMessage = nil
         isLoading = true
         post = nil
 
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            
-            if let error = error {
+        URLSession.shared.dataTask(with: url) { data, _, error in
+
+            if let error {
                 DispatchQueue.main.async {
                     self.errorMessage = error.localizedDescription
                     self.isLoading = false
@@ -186,7 +140,7 @@ class PostViewModel: ObservableObject {
                 return
             }
 
-            guard let data = data else {
+            guard let data else {
                 DispatchQueue.main.async {
                     self.errorMessage = "No data received"
                     self.isLoading = false
@@ -194,16 +148,67 @@ class PostViewModel: ObservableObject {
                 return
             }
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {   // shimmer visibility delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 do {
                     self.post = try JSONDecoder().decode(Post.self, from: data)
                 } catch {
-                    self.errorMessage = "Decoding error: \(error)"
+                    self.errorMessage = "Decoding error"
                 }
-
                 self.isLoading = false
             }
         }.resume()
+    }
+}
+```
+
+---
+
+### 2️⃣ ContentView (Connect shimmer to API state)
+
+```swift
+import SwiftUI
+import UniversalShimmer
+
+struct ContentView: View {
+
+    @StateObject private var viewModel = PostViewModel()
+
+    var body: some View {
+        VStack(spacing: 20) {
+
+            // Any content (card / text / image)
+            VStack(alignment: .leading, spacing: 12) {
+
+                Text(viewModel.post?.title ?? "Loading title")
+                    .font(.title2)
+                    .fontWeight(.bold)
+
+                Text(viewModel.post?.body ?? "Loading body text goes here")
+                    .font(.body)
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.secondarySystemBackground))
+            )
+
+            // 🔥 Shimmer connected to API loading state
+            .shimmerize(
+                active: viewModel.isLoading,
+                shouldAddHideMask: true,
+                hideMaskColor: Color.gray.opacity(0.3),
+                hideMaskRadius: 16
+            )
+
+            if let error = viewModel.errorMessage {
+                Text(error)
+                    .foregroundColor(.red)
+            }
+        }
+        .padding()
+        .onAppear {
+            viewModel.fetchPost()
+        }
     }
 }
 ```
