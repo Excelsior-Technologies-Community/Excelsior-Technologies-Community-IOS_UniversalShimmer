@@ -77,17 +77,24 @@ struct UniversalShimmerModifier: ViewModifier {
 public extension View {
 
     /// Universal shimmer that adapts to ANY content shape
+    @ViewBuilder
     func universalShimmer(
         _ isActive: Bool,
         speed: CGFloat = 1.2,
         colors: [Color] = []
     ) -> some View {
-        modifier(
-            UniversalShimmerModifier(
-                isActive: isActive,
-                speed: speed,
-                colors: colors
+        if #available(iOS 15.0, *) {
+            self.modifier(
+                UniversalShimmerModifier(
+                    isActive: isActive,
+                    speed: speed,
+                    colors: colors
+                )
             )
-        )
+        } else {
+            // ✅ iOS 14 & below: graceful fallback
+            self
+        }
     }
 }
+
